@@ -32,18 +32,6 @@ public class BluetoothManager {
         return instance;
     }
 
-    public void scan(BluetoothAdapter btAdapter) {
-
-        if(btDevList != null)
-            btDevList.clear();
-
-        if(btAdapter.isDiscovering())
-            btAdapter.cancelDiscovery();
-
-        btAdapter.startDiscovery();
-
-    }
-
     public List<BtDevice> getBtDevList(){
         return btDevList;
     }
@@ -51,7 +39,8 @@ public class BluetoothManager {
         btDevList.add(device);
     }
 
-    public boolean connect(String devName) {
+    public boolean connect(BtDevice deviceToConnect) {
+        /////////////////////////////CONEXION/////////////////////////////
         return false;
     }
 

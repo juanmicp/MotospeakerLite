@@ -1,10 +1,13 @@
 package com.juanmi.motospeakerlite;
 
+import java.io.Serializable;
+
 /**
  * Created by Juanmi on 22/05/2017.
  */
 
-class BtDevice {
+@SuppressWarnings("serial")
+class BtDevice implements Serializable { //Implementa serializable para poder pasar un objeto de tipo BtDevice como parámetro.
 
     private String name;
     private String address;

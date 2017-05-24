@@ -53,29 +53,31 @@ public class MainActivity extends AppCompatActivity {
         devicesLV = (ListView)findViewById(R.id.devicesLV);
         adapter = new ArrayAdapter<BtDevice>(this, android.R.layout.simple_list_item_1, btDevList);
         devicesLV.setAdapter(adapter);
+        devicesLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                btAdapter.cancelDiscovery(); //Se deja de buscar dispositivos.
+                BtDevice btd = (BtDevice) devicesLV.getItemAtPosition(i);
+                btd.setConnected(true);
+                Toast.makeText(getBaseContext(), "Conectando con "+ btd.getName()+"...", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(view.getContext(), CommunicateActivity.class);
+                intent.putExtra("parameter", btd); //Se manda como parámetro a la nueva activity el dispositivo con el que conectamos.
+                startActivity(intent);
+            }
+        });
 
     }
 
     public void scan(View view){ //Escanear y mostrar en lista los dispositivos bluetooth disponibles.
-        //BluetoothManager btManager = BluetoothManager.getInstance();
+        if(btDevList != null) {
+            btDevList.clear();
+            adapter.notifyDataSetChanged();
+        }
+        if(btAdapter.isDiscovering()) //Si está buscando, se reinicia la búsqueda.
+            btAdapter.cancelDiscovery();
         btAdapter.startDiscovery();
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(bReceiver, filter);
-        /*
-        //btManager.scan(btAdapter);
-        //List <BtDevice> btDevList = btManager.getBtDevList();
-        devicesLV = (ListView) findViewById(R.id.devicesLV);
-        adapter = new ArrayAdapter<BtDevice>(this, android.R.layout.simple_list_item_1, btDevList);
-        devicesLV.setAdapter(adapter);
-        devicesLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String item = ((TextView)view).getText().toString();
-                Toast.makeText(getBaseContext(), "Conectando con "+item+"...", Toast.LENGTH_SHORT).show();
-                connect(item);
-            }
-        });
-        */
     }
 
     public void makeVisible (View view){
@@ -89,16 +91,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void connect(String devName){ //Conectar con el dispositivo seleccionado.
-        BluetoothManager btManager = BluetoothManager.getInstance();
-        if (btManager.connect(devName)){ //Si conecta con el dispositivo en cuestión.
-            /////////Abrir intent a ventana con cuadro dos cuadros de texto (envio y recepción).
-        }
-        else{
-            Toast.makeText(getBaseContext(), "Imposible conectar con "+ devName+".", Toast.LENGTH_SHORT).show();
-        }
-    }
-
     private final BroadcastReceiver bReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -106,10 +98,15 @@ public class MainActivity extends AppCompatActivity {
             if (BluetoothDevice.ACTION_FOUND.equals(action)){ //Cuando se detecta un nuevo dispositivo Bluetooth:
                 BluetoothDevice dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 BtDevice device = new BtDevice(dev.getName(), dev.getAddress(), false);
-                btDevList.add(device);
-                adapter.add(device);
-                //adapter.notifyDataSetChanged();
-                //devicesLV.setAdapter(new ArrayAdapter<BtDevice>(context, android.R.layout.simple_list_item_1, btDevList));
+                boolean exist = false;
+                for(BtDevice btd: btDevList){
+                    if (btd.equals(device))
+                        exist=true;
+                }
+                if (!exist) {
+                    btDevList.add(device);
+                    adapter.notifyDataSetChanged();
+                }
             }
         }
     };
