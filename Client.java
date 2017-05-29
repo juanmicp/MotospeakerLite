@@ -14,14 +14,12 @@ import java.util.UUID;
  * Created by Juanmi on 25/05/2017.
  */
 
-public class Client extends Thread {
+public class Client {
 
     private BluetoothSocket socket;
-    private String toSend;
     private PrintWriter out;
-    private BufferedReader in;
 
-    public Client (BluetoothDevice device, String uuid) {
+    public Client (BluetoothDevice device, String uuid) { //Constructor que usa el que haga de cliente al establecer la conexión.
         BluetoothSocket tmp = null;
         try {
             tmp = device.createRfcommSocketToServiceRecord(UUID.fromString(uuid));
@@ -34,7 +32,6 @@ public class Client extends Thread {
         try {
             socket.connect();
             this.out=new PrintWriter(socket.getOutputStream());
-            this.in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
         }
         catch (IOException e) {
             Log.d("Client","Could not connect: " + e.toString());
@@ -47,33 +44,33 @@ public class Client extends Thread {
         }
     }
 
-    public void run() {
-        out.println(this.toSend);
-        out.flush();
-        boolean salir=false;
-        while (!salir) {
+    public Client (BluetoothSocket socket) { //Para el que hace de cliente a la hora de conectar.
+        this.socket = socket;
+        try {
+            this.out = new PrintWriter(this.socket.getOutputStream());
+        }
+        catch (IOException e){
+            Log.d("Client","Could not create output stream: " + e.toString());
             try {
-                StringBuffer buffer=new StringBuffer();
-                while (true) {
-                    int ch=in.read();
-                    if (ch<0 || ch=='\n')
-                        break;
-                    buffer.append((char) ch);
-                }
-
-                String texto=buffer.toString();
-                salir=true;
-            }
-            catch (Exception e) {
-                Log.d("Client", "In run:" + e.toString());
-                salir=true;
+                socket.close();
+            } catch (IOException e2) {
+                Log.d("Client", "Could not close connection:" + e.toString());
+                return;
             }
         }
+    }
+
+    public void send(String toSend) {
+        out.println(toSend);
+        out.flush();
+
+        /*
         try {
             socket.close();
         } catch (IOException e) {
             Log.d("Client", "In run: Could not close connection:" + e.toString());
         }
+        */
     }
 
     public void cancel() {
@@ -84,8 +81,8 @@ public class Client extends Thread {
         }
     }
 
-    public void setRequest(String toSend) {
-        this.toSend=toSend;
+    public BluetoothSocket getSocket (){
+        return socket;
     }
 
 }

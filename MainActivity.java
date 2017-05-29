@@ -25,7 +25,6 @@ import static android.R.attr.action;
 
 public class MainActivity extends AppCompatActivity {
 
-    private BluetoothAdapter btAdapter;
     private ListView devicesLV;
     private List<BtDevice> btDevList = new ArrayList();
     private ArrayAdapter<BtDevice> adapter;
@@ -35,6 +34,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        BluetoothManager btm = BluetoothManager.getInstance();
+        btm.createBtAdapter();
+        BluetoothAdapter btAdapter = btm.getBtAdapter();
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -56,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         devicesLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                btAdapter.cancelDiscovery(); //Se deja de buscar dispositivos.
+                BluetoothManager.getInstance().getBtAdapter().cancelDiscovery(); //Se deja de buscar dispositivos.
                 BtDevice btd = (BtDevice) devicesLV.getItemAtPosition(i);
                 btd.setConnected(true);
                 Toast.makeText(getBaseContext(), "Conectando con "+ btd.getName()+"...", Toast.LENGTH_SHORT).show();
@@ -69,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void scan(View view){ //Escanear y mostrar en lista los dispositivos bluetooth disponibles.
+        BluetoothAdapter btAdapter = BluetoothManager.getInstance().getBtAdapter();
         if(btDevList != null) {
             btDevList.clear();
             adapter.notifyDataSetChanged();
@@ -81,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void makeVisible (View view){
-        if (btAdapter.isEnabled()){
+        if (BluetoothManager.getInstance().getBtAdapter().isEnabled()){
             Intent visibleBt = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
             visibleBt.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 120);
             startActivity(visibleBt);
@@ -97,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
             String action = intent.getAction();
             if (BluetoothDevice.ACTION_FOUND.equals(action)){ //Cuando se detecta un nuevo dispositivo Bluetooth:
                 BluetoothDevice dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                BtDevice device = new BtDevice(dev.getName(), dev.getAddress(), false);
+                BtDevice device = new BtDevice(dev, false);
                 boolean exist = false;
                 for(BtDevice btd: btDevList){
                     if (btd.equals(device))

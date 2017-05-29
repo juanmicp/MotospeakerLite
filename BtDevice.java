@@ -1,5 +1,7 @@
 package com.juanmi.motospeakerlite;
 
+import android.bluetooth.BluetoothDevice;
+
 import java.io.Serializable;
 
 /**
@@ -9,30 +11,24 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 class BtDevice implements Serializable { //Implementa serializable para poder pasar un objeto de tipo BtDevice como parámetro.
 
-    private String name;
-    private String address;
+    private BluetoothDevice device;
     private boolean connected;
 
-    public BtDevice(String name, String address, boolean connected) {
-        this.name = name;
-        this.address = address;
+    public BtDevice(BluetoothDevice device, boolean connected) {
+        this.device = device;
         this.connected = connected;
     }
 
     public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        return device.getName();
     }
 
     public String getAddress() {
-        return address;
+        return device.getAddress();
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public BluetoothDevice getDevice(){
+        return device;
     }
 
     public boolean isConnected() {
@@ -45,6 +41,6 @@ class BtDevice implements Serializable { //Implementa serializable para poder pa
 
     @Override
     public String toString() {
-        return name;
+        return device.getName();
     }
 }

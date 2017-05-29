@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
+import android.widget.EditText;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,22 +19,46 @@ import java.util.UUID;
 public class Server extends Thread {
 
     private BluetoothServerSocket serverSocket;
+    private BluetoothSocket socket = null;
+    private EditText etToReceive;
+    String text;
 
-    public Server (BluetoothAdapter bluetoothAdapter, String uuid) {
+    public Server (BluetoothAdapter bluetoothAdapter, String uuid) { //Constructor para el que ejerce de servidor en el momento de la conexión.
         try {
-            serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord("ModernTriType", UUID.fromString(uuid));
+            serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord("Motospeaker", UUID.fromString(uuid));
         } catch (IOException e) {
             Log.d("Server", "Socket's listen() method failed: " + e.toString());
         }
+        while (true) {
+            try {
+                this.socket = serverSocket.accept();
+            } catch (Exception e) {
+                Log.d("Server", "Socket's accept() method failed: " + e.toString());
+                break;
+            }
+            if (socket != null){
+                try {
+                    serverSocket.close();
+                }catch (IOException e){
+                    Log.d("Server", "Could not close ServerSocket:" + e.toString());
+                }
+                break;
+            }
+        }
+
+    }
+
+    public Server(BluetoothSocket socket){ //Para el caso de que sea cliente a la hora de conectar.
+        this.socket = socket;
     }
 
     public void run() {
+        int oldWritten = 0;
         while (true) {
             try {
-                BluetoothSocket socket = serverSocket.accept();
-                PrintWriter out=new PrintWriter(socket.getOutputStream());
                 BufferedReader in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
+                /*
                 StringBuffer buffer=new StringBuffer();
                 while (true) {
                     int ch=in.read();
@@ -41,13 +66,17 @@ public class Server extends Thread {
                         break;
                     buffer.append((char) ch);
                 }
+                */
+                int written = in.read();
+                text= String.valueOf(written);
 
-                String text=buffer.toString();
-                out.println(text.toString());
-                out.flush();
-                socket.close();
+                if (written != oldWritten && written != 0){
+                    etToReceive.setText(text);
+                }
+                oldWritten = written;
+                //socket.close();
             } catch (Exception e) {
-                Log.d("Server", "Socket's accept() method failed: " + e.toString());
+                Log.d("Server", "Could not read: " + e.toString());
                 break;
             }
         }
@@ -55,10 +84,22 @@ public class Server extends Thread {
 
     public void cancel() {
         try {
-            serverSocket.close();
+            socket.close();
         } catch (IOException e) {
             Log.d("Server", "Could not close the connected socket: " + e.toString());
         }
+    }
+
+    public BluetoothSocket getSocket(){
+        return socket;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setEtToReceive(EditText etToReceive) {
+        this.etToReceive = etToReceive;
     }
 
 }
