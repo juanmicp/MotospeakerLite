@@ -25,9 +25,10 @@ public class BluetoothManager {
     private BluetoothAdapter btAdapter;
     private List<BtDevice> btDevList = new ArrayList();
     private static BluetoothManager instance = null;
-    private String uuid = "ea33eca1-c704-4062-a111-98f7b323e824";
+    private String uuid = "00001101-0000-1000-8000-00805f9b34fb";
     private Server btServer;
     private Client btClient;
+    private BtDevice btDevToConnect = null;
 
     private BluetoothManager() {
     }
@@ -54,11 +55,11 @@ public class BluetoothManager {
         btDevList.add(device);
     }
 
-    public boolean connect(BtDevice deviceToConnect) {
+    public boolean connect() {
         boolean conectado = false;
         /////////////////////////////CONEXION/////////////////////////////
         BluetoothSocket btSocket = null;
-        if (deviceToConnect == null){ //Conexión en la parte servidora.
+        if (btDevToConnect == null){ //Conexión en la parte servidora.
             btServer = new Server(btAdapter, uuid);
             while (btSocket == null){
                 btSocket = btServer.getSocket();
@@ -66,7 +67,7 @@ public class BluetoothManager {
             btClient = new Client(btSocket);
             conectado = true;
         }else{ //Conexión en la parte cliente.
-            btClient = new Client(deviceToConnect.getDevice(), uuid);
+            btClient = new Client(btDevToConnect.getDevice(), uuid);
             btSocket = btClient.getSocket();
             btServer = new Server(btSocket);
             conectado = true;
@@ -90,5 +91,9 @@ public class BluetoothManager {
 
     public void setEditText(EditText editText) {
 
+    }
+
+    public void setBtDevToConnect(BtDevice btDevToConnect) {
+        this.btDevToConnect = btDevToConnect;
     }
 }

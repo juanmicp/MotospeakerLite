@@ -9,14 +9,12 @@ import android.widget.Toast;
 
 public class CommunicateActivity extends AppCompatActivity {
 
-    BtDevice asociatedBtDevice; //Dispositivo bluetooth de la persona con la que se realiza la comunicación.
     Button sendButton;
     EditText etToReceive;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_communicate);
-        asociatedBtDevice = (BtDevice)getIntent().getExtras().getSerializable("parameter");
         sendButton = (Button) findViewById(R.id.sendButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -32,12 +30,12 @@ public class CommunicateActivity extends AppCompatActivity {
 
     private void connect(){ //Conectar con el dispositivo seleccionado.
         BluetoothManager btManager = BluetoothManager.getInstance();
-        if (btManager.connect(asociatedBtDevice)){ //Si conecta con el dispositivo en cuestión.
+        if (btManager.connect()){ //Si conecta con el dispositivo en cuestión.
             btManager.setEditText(etToReceive);
             sendButton.setEnabled(true); //En ese caso se activa el botón de envío.
         }
         else{
-            Toast.makeText(getBaseContext(), "Imposible conectar con "+ asociatedBtDevice.getName()+".", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), "Imposible conectar.", Toast.LENGTH_SHORT).show();
         }
     }
 

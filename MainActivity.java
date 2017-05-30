@@ -59,12 +59,13 @@ public class MainActivity extends AppCompatActivity {
         devicesLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                BluetoothManager.getInstance().getBtAdapter().cancelDiscovery(); //Se deja de buscar dispositivos.
+                BluetoothManager btm = BluetoothManager.getInstance();
+                btm.getBtAdapter().cancelDiscovery(); //Se deja de buscar dispositivos.
                 BtDevice btd = (BtDevice) devicesLV.getItemAtPosition(i);
                 btd.setConnected(true);
+                btm.setBtDevToConnect(btd);
                 Toast.makeText(getBaseContext(), "Conectando con "+ btd.getName()+"...", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(view.getContext(), CommunicateActivity.class);
-                intent.putExtra("parameter", btd); //Se manda como parámetro a la nueva activity el dispositivo con el que conectamos.
                 startActivity(intent);
             }
         });
@@ -89,6 +90,10 @@ public class MainActivity extends AppCompatActivity {
             Intent visibleBt = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
             visibleBt.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 120);
             startActivity(visibleBt);
+            //
+            while (BluetoothManager.getInstance().getBtAdapter().getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE){}
+            Intent intent = new Intent(view.getContext(), CommunicateActivity.class);
+            startActivity(intent);
         }
         else{
             Toast.makeText(getBaseContext(), "No puebe hacerse visible. Bluetooth deshabilitado.", Toast.LENGTH_SHORT).show();
