@@ -65,11 +65,13 @@ public class BluetoothManager {
                 btSocket = btServer.getSocket();
             }
             btClient = new Client(btSocket);
+            btServer.start();
             conectado = true;
         }else{ //Conexión en la parte cliente.
             btClient = new Client(btDevToConnect.getDevice(), uuid);
             btSocket = btClient.getSocket();
             btServer = new Server(btSocket);
+            btServer.start();
             conectado = true;
         }
         return conectado;
@@ -90,7 +92,7 @@ public class BluetoothManager {
     }
 
     public void setEditText(EditText editText) {
-
+        btServer.setEtToReceive(editText);
     }
 
     public void setBtDevToConnect(BtDevice btDevToConnect) {

@@ -7,6 +7,7 @@ import android.util.Log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ import java.util.UUID;
 public class Client {
 
     private BluetoothSocket socket;
-    private PrintWriter out;
+    private OutputStream out;
 
     public Client (BluetoothDevice device, String uuid) { //Constructor que usa el que haga de cliente al establecer la conexión.
         BluetoothSocket tmp = null;
@@ -31,7 +32,7 @@ public class Client {
 
         try {
             socket.connect();
-            this.out=new PrintWriter(socket.getOutputStream());
+            this.out=socket.getOutputStream();
         }
         catch (IOException e) {
             Log.d("Client","Could not connect: " + e.toString());
@@ -47,22 +48,25 @@ public class Client {
     public Client (BluetoothSocket socket) { //Para el que hace de cliente a la hora de conectar.
         this.socket = socket;
         try {
-            this.out = new PrintWriter(this.socket.getOutputStream());
+            this.out = this.socket.getOutputStream();
         }
         catch (IOException e){
             Log.d("Client","Could not create output stream: " + e.toString());
             try {
                 socket.close();
             } catch (IOException e2) {
-                Log.d("Client", "Could not close connection:" + e.toString());
+                Log.d("Client", "Could not close connection: " + e.toString());
                 return;
             }
         }
     }
 
     public void send(String toSend) {
-        out.println(toSend);
-        out.flush();
+        try {
+            out.write(toSend.getBytes());
+        } catch (IOException e) {
+            Log.d("Client", "Could not write: " + e.toString());
+        }
 
         /*
         try {

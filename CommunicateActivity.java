@@ -1,5 +1,7 @@
 package com.juanmi.motospeakerlite;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -11,6 +13,7 @@ public class CommunicateActivity extends AppCompatActivity {
 
     Button sendButton;
     EditText etToReceive;
+    public static Handler UIHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,6 +28,7 @@ public class CommunicateActivity extends AppCompatActivity {
             }
         });
         etToReceive = (EditText)findViewById(R.id.heSheEditText);
+        UIHandler = new Handler(Looper.getMainLooper());
         connect();
     }
 
@@ -38,6 +42,7 @@ public class CommunicateActivity extends AppCompatActivity {
             Toast.makeText(getBaseContext(), "Imposible conectar.", Toast.LENGTH_SHORT).show();
         }
     }
-
-
+    public static void runOnUI(Runnable runnable) {
+        UIHandler.post(runnable);
+    }
 }

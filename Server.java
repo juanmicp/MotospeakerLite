@@ -8,6 +8,7 @@ import android.widget.EditText;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.UUID;
@@ -53,28 +54,26 @@ public class Server extends Thread {
     }
 
     public void run() {
-        int oldWritten = 0;
+
+        String oldText = "";
         while (true) {
+            byte[] buffer = new byte[1024];
+            int bytes;
             try {
-                BufferedReader in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                InputStream in = socket.getInputStream();
+                bytes = in.read(buffer);
+                final String text = new String(buffer, 0, bytes);
+                String prueba = "test";
+                if (!text.equals(oldText) && !text.equals("")){
 
-                /*
-                StringBuffer buffer=new StringBuffer();
-                while (true) {
-                    int ch=in.read();
-                    if (ch<0 || ch=='\n')
-                        break;
-                    buffer.append((char) ch);
+                    CommunicateActivity.runOnUI(new Runnable() {
+                        @Override
+                        public void run() {
+                            etToReceive.setText(text);
+                        }
+                    });
                 }
-                */
-                int written = in.read();
-                text= String.valueOf(written);
-
-                if (written != oldWritten && written != 0){
-                    etToReceive.setText(text);
-                }
-                oldWritten = written;
-                //socket.close();
+                oldText = text;
             } catch (Exception e) {
                 Log.d("Server", "Could not read: " + e.toString());
                 break;
